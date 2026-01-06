@@ -83,7 +83,7 @@ export function TaskForm({ open, onOpenChange, editTask }: TaskFormProps) {
 
    return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-         <DialogContent className="sm:max-w-[425px]">
+         <DialogContent className="sm:max-w-106.25 text-primary">
             <form onSubmit={handleSubmit}>
                <DialogHeader>
                   <DialogTitle>{editTask ? "Edit Task" : "Create New Task"}</DialogTitle>
