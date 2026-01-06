@@ -37,7 +37,7 @@ export function TaskList({ onEdit }: TaskListProps) {
    }
 
    return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
          {filteredTasks.map((task) => (
             <TaskCard key={task.id} task={task} onEdit={onEdit} />
          ))}

@@ -16,9 +16,9 @@ interface TaskCardProps {
 }
 
 const priorityColors = {
-   low: "text-blue-500 bg-blue-50",
-   medium: "text-yellow-500 bg-yellow-50",
-   high: "text-red-500 bg-red-50",
+   low: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950",
+   medium: "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950",
+   high: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950",
 };
 
 const statusLabels = {
@@ -31,15 +31,19 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
    const { updateTask } = useTaskStore();
 
    return (
-      <Card className="group relative transition-all hover:shadow-md">
+      <Card className="group relative transition-all hover:shadow-md touch-manipulation">
          <CardHeader className="pb-2">
-            <div className="flex items-start justify-between">
-               <CardTitle className="line-clamp-2 text-sm font-medium" onClick={() => onEdit(task)}>
+            <div className="flex items-start justify-between gap-2">
+               <CardTitle className="line-clamp-2 text-sm font-medium leading-snug cursor-pointer" onClick={() => onEdit(task)}>
                   {task.title}
                </CardTitle>
                <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                     <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100">
+                     <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 -mr-1 -mt-1"
+                     >
                         <MoreVertical className="h-4 w-4" />
                      </Button>
                   </DropdownMenuTrigger>
@@ -52,7 +56,7 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
                </DropdownMenu>
             </div>
          </CardHeader>
-         <CardContent className="space-y-3">
+         <CardContent className="space-y-3 pt-0">
             {task.description && <p className="line-clamp-2 text-xs text-muted-foreground">{task.description}</p>}
 
             <div className="flex flex-wrap items-center gap-2">
@@ -61,12 +65,12 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
                      <TooltipTrigger asChild>
                         <div
                            className={cn(
-                              "flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+                              "flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
                               priorityColors[task.priority]
                            )}
                         >
                            <Flag className="h-3 w-3" />
-                           {task.priority}
+                           <span className="capitalize">{task.priority}</span>
                         </div>
                      </TooltipTrigger>
                      <TooltipContent>Priority</TooltipContent>
@@ -77,7 +81,7 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
                         <TooltipTrigger asChild>
                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Calendar className="h-3 w-3" />
-                              {formatRelativeTime(task.due_date)}
+                              <span>{formatRelativeTime(task.due_date)}</span>
                            </div>
                         </TooltipTrigger>
                         <TooltipContent>Due Date</TooltipContent>

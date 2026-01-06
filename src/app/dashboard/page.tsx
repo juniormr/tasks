@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { useTaskStore } from "@/store/use-task-store";
-import { useState } from "react";
 import { TaskForm, KanbanBoard, TimelineView } from "@/components/tasks";
 import { TaskList } from "@/components/tasks/task-list";
 import { Button } from "@/components/ui/button";
@@ -61,22 +60,23 @@ export default function DashboardPage() {
          <Sidebar />
          <div className="flex flex-1 flex-col overflow-hidden">
             <Header />
-            <main className="flex-1 overflow-y-auto bg-muted/30 p-4">
+            <main className="flex-1 overflow-y-auto bg-muted/30 p-3 sm:p-4">
                <div className="flex h-full flex-col">
-                  <div className="mb-4 flex items-center justify-between">
+                  <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                      <div>
-                        <h2 className="text-2xl font-bold">My Tasks</h2>
-                        <p className="text-muted-foreground">Manage and organize your tasks efficiently</p>
+                        <h2 className="text-xl sm:text-2xl font-bold">My Tasks</h2>
+                        <p className="text-xs sm:text-sm text-muted-foreground">Manage and organize your tasks efficiently</p>
                      </div>
 
                      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                         <DialogTrigger asChild>
-                           <Button onClick={handleCreate}>
-                              <Plus className="mr-2 h-4 w-4" />
-                              Add Task
+                           <Button size="sm" onClick={handleCreate}>
+                              <Plus className="mr-1.5 h-4 w-4" />
+                              <span className="hidden sm:inline">Add Task</span>
+                              <span className="sm:hidden">Add</span>
                            </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="sm:max-w-[425px]">
                            <DialogHeader>
                               <DialogTitle>{editTask ? "Edit Task" : "Create New Task"}</DialogTitle>
                            </DialogHeader>
