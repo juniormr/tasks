@@ -1,13 +1,21 @@
 "use client";
 
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+   DndContext,
+   DragOverlay,
+   DragStartEvent,
+   DragEndEvent,
+   MouseSensor,
+   TouchSensor,
+   useSensor,
+   useSensors,
+   closestCorners,
+} from "@dnd-kit/core";
 import { useState } from "react";
 import { useTaskStore, Task } from "@/store/use-task-store";
 import { KanbanColumn } from "./kanban-column";
 import { TaskCard } from "./task-card";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import { cn } from "@/lib/utils";
+import { createPortal } from "react-dom";
 
 interface KanbanBoardProps {
    onEdit: (task: Task) => void;
@@ -16,12 +24,17 @@ interface KanbanBoardProps {
 export function KanbanBoard({ onEdit }: KanbanBoardProps) {
    const { tasks, updateTask, filter, searchQuery } = useTaskStore();
    const [activeTask, setActiveTask] = useState<Task | null>(null);
-   const isMobile = useMediaQuery("(max-width: 768px)");
 
    const sensors = useSensors(
-      useSensor(PointerSensor, {
+      useSensor(MouseSensor, {
          activationConstraint: {
-            distance: 8,
+            distance: 10,
+         },
+      }),
+      useSensor(TouchSensor, {
+         activationConstraint: {
+            delay: 250,
+            tolerance: 5,
          },
       })
    );
@@ -39,7 +52,8 @@ export function KanbanBoard({ onEdit }: KanbanBoardProps) {
    const doneTasks = filteredTasks.filter((t) => t.status === "done");
 
    const handleDragStart = (event: DragStartEvent) => {
-      const task = tasks.find((t) => t.id === event.active.id);
+      const { active } = event;
+      const task = tasks.find((t) => t.id === active.id);
       if (task) {
          setActiveTask(task);
       }
@@ -54,27 +68,33 @@ export function KanbanBoard({ onEdit }: KanbanBoardProps) {
       const taskId = active.id as string;
       const newStatus = over.id as Task["status"];
 
-      const task = tasks.find((t) => t.id === taskId);
-      if (task && task.status !== newStatus) {
-         updateTask(taskId, { status: newStatus });
+      if (newStatus && ["todo", "in_progress", "done"].includes(newStatus)) {
+         const task = tasks.find((t) => t.id === taskId);
+         if (task && task.status !== newStatus) {
+            updateTask(taskId, { status: newStatus });
+         }
       }
    };
 
    return (
-      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-         <div className={cn("grid gap-4 h-full", isMobile ? "grid-cols-1" : "md:grid-cols-3")}>
+      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+         <div className="grid gap-4 h-full md:grid-cols-3">
             <KanbanColumn id="todo" title="To Do" tasks={todoTasks} onEdit={onEdit} />
             <KanbanColumn id="in_progress" title="In Progress" tasks={inProgressTasks} onEdit={onEdit} />
             <KanbanColumn id="done" title="Done" tasks={doneTasks} onEdit={onEdit} />
          </div>
 
-         <DragOverlay>
-            {activeTask && (
-               <div className={cn("rotate-2 cursor-grabbing opacity-80", isMobile && "scale-105")}>
-                  <TaskCard task={activeTask} onEdit={() => {}} />
-               </div>
+         {typeof window !== "undefined" &&
+            createPortal(
+               <DragOverlay>
+                  {activeTask && (
+                     <div className="opacity-80 rotate-2 cursor-grabbing">
+                        <TaskCard task={activeTask} onEdit={() => {}} />
+                     </div>
+                  )}
+               </DragOverlay>,
+               document.body
             )}
-         </DragOverlay>
       </DndContext>
    );
 }

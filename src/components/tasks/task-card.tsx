@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Calendar, Flag, MoreVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useDraggable } from "@dnd-kit/core";
 
 interface TaskCardProps {
    task: Task;
@@ -30,84 +31,104 @@ const statusLabels = {
 export function TaskCard({ task, onEdit }: TaskCardProps) {
    const { updateTask } = useTaskStore();
 
+   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+      id: task.id,
+   });
+
    return (
-      <Card className="group relative transition-all hover:shadow-md touch-manipulation">
-         <CardHeader className="pb-2">
-            <div className="flex items-start justify-between gap-2">
-               <CardTitle className="line-clamp-2 text-sm font-medium leading-snug cursor-pointer" onClick={() => onEdit(task)}>
-                  {task.title}
-               </CardTitle>
-               <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                     <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 -mr-1 -mt-1"
-                     >
-                        <MoreVertical className="h-4 w-4" />
-                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                     <DropdownMenuItem onClick={() => onEdit(task)}>Edit</DropdownMenuItem>
-                     <DropdownMenuItem onClick={() => useTaskStore.getState().deleteTask(task.id)} className="text-destructive">
-                        Delete
-                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-               </DropdownMenu>
-            </div>
-         </CardHeader>
-         <CardContent className="space-y-3 pt-0">
-            {task.description && <p className="line-clamp-2 text-xs text-muted-foreground">{task.description}</p>}
-
-            <div className="flex flex-wrap items-center gap-2">
-               <TooltipProvider>
-                  <Tooltip>
-                     <TooltipTrigger asChild>
-                        <div
-                           className={cn(
-                              "flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
-                              priorityColors[task.priority]
-                           )}
+      <div
+         ref={setNodeRef}
+         {...listeners}
+         {...attributes}
+         className={cn(
+            "group relative transition-all hover:shadow-md touch-manipulation",
+            isDragging && "opacity-50 cursor-grabbing"
+         )}
+      >
+         <Card className="cursor-grab active:cursor-grabbing">
+            <CardHeader className="pb-2">
+               <div className="flex items-start justify-between gap-2">
+                  <CardTitle
+                     className="line-clamp-2 text-sm font-medium leading-snug cursor-pointer"
+                     onClick={() => onEdit(task)}
+                  >
+                     {task.title}
+                  </CardTitle>
+                  <DropdownMenu>
+                     <DropdownMenuTrigger asChild>
+                        <Button
+                           variant="ghost"
+                           size="icon"
+                           className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 -mr-1 -mt-1"
                         >
-                           <Flag className="h-3 w-3" />
-                           <span className="capitalize">{task.priority}</span>
-                        </div>
-                     </TooltipTrigger>
-                     <TooltipContent>Priority</TooltipContent>
-                  </Tooltip>
+                           <MoreVertical className="h-4 w-4" />
+                        </Button>
+                     </DropdownMenuTrigger>
+                     <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onEdit(task)}>Edit</DropdownMenuItem>
+                        <DropdownMenuItem
+                           onClick={() => useTaskStore.getState().deleteTask(task.id)}
+                           className="text-destructive"
+                        >
+                           Delete
+                        </DropdownMenuItem>
+                     </DropdownMenuContent>
+                  </DropdownMenu>
+               </div>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-0">
+               {task.description && <p className="line-clamp-2 text-xs text-muted-foreground">{task.description}</p>}
 
-                  {task.due_date && (
+               <div className="flex flex-wrap items-center gap-2">
+                  <TooltipProvider>
                      <Tooltip>
                         <TooltipTrigger asChild>
-                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Calendar className="h-3 w-3" />
-                              <span>{formatRelativeTime(task.due_date)}</span>
+                           <div
+                              className={cn(
+                                 "flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
+                                 priorityColors[task.priority]
+                              )}
+                           >
+                              <Flag className="h-3 w-3" />
+                              <span className="capitalize">{task.priority}</span>
                            </div>
                         </TooltipTrigger>
-                        <TooltipContent>Due Date</TooltipContent>
+                        <TooltipContent>Priority</TooltipContent>
                      </Tooltip>
-                  )}
 
-                  <Tooltip>
-                     <TooltipTrigger asChild>
-                        <div className="text-xs text-muted-foreground">{formatRelativeTime(task.created_at)}</div>
-                     </TooltipTrigger>
-                     <TooltipContent>Created</TooltipContent>
-                  </Tooltip>
-               </TooltipProvider>
-            </div>
+                     {task.due_date && (
+                        <Tooltip>
+                           <TooltipTrigger asChild>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                 <Calendar className="h-3 w-3" />
+                                 <span>{formatRelativeTime(task.due_date)}</span>
+                              </div>
+                           </TooltipTrigger>
+                           <TooltipContent>Due Date</TooltipContent>
+                        </Tooltip>
+                     )}
 
-            <Select value={task.status} onValueChange={(value: Task["status"]) => updateTask(task.id, { status: value })}>
-               <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-               </SelectTrigger>
-               <SelectContent>
-                  <SelectItem value="todo">{statusLabels.todo}</SelectItem>
-                  <SelectItem value="in_progress">{statusLabels.in_progress}</SelectItem>
-                  <SelectItem value="done">{statusLabels.done}</SelectItem>
-               </SelectContent>
-            </Select>
-         </CardContent>
-      </Card>
+                     <Tooltip>
+                        <TooltipTrigger asChild>
+                           <div className="text-xs text-muted-foreground">{formatRelativeTime(task.created_at)}</div>
+                        </TooltipTrigger>
+                        <TooltipContent>Created</TooltipContent>
+                     </Tooltip>
+                  </TooltipProvider>
+               </div>
+
+               <Select value={task.status} onValueChange={(value: Task["status"]) => updateTask(task.id, { status: value })}>
+                  <SelectTrigger className="h-8 text-xs">
+                     <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                     <SelectItem value="todo">{statusLabels.todo}</SelectItem>
+                     <SelectItem value="in_progress">{statusLabels.in_progress}</SelectItem>
+                     <SelectItem value="done">{statusLabels.done}</SelectItem>
+                  </SelectContent>
+               </Select>
+            </CardContent>
+         </Card>
+      </div>
    );
 }
