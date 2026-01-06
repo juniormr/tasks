@@ -1,15 +1,31 @@
 "use client";
 
 import { useTaskStore } from "@/store/use-task-store";
-import { TaskCard } from "./task-card";
 import { Task } from "@/store/use-task-store";
+import { cn, formatDate } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar, MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface TaskListProps {
    onEdit: (task: Task) => void;
 }
 
+const priorityColors = {
+   low: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950",
+   medium: "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950",
+   high: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950",
+};
+
+const statusLabels = {
+   todo: "To Do",
+   in_progress: "In Progress",
+   done: "Done",
+};
+
 export function TaskList({ onEdit }: TaskListProps) {
-   const { tasks, filter, searchQuery, isLoading } = useTaskStore();
+   const { tasks, filter, searchQuery, isLoading, updateTask } = useTaskStore();
 
    const filteredTasks = tasks.filter((task) => {
       const matchesFilter = filter === "all" || task.status === filter;
@@ -37,9 +53,74 @@ export function TaskList({ onEdit }: TaskListProps) {
    }
 
    return (
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="space-y-2">
          {filteredTasks.map((task) => (
-            <TaskCard key={task.id} task={task} onEdit={onEdit} />
+            <div
+               key={task.id}
+               className="group flex items-center gap-4 rounded-lg border bg-card p-3 transition-all hover:shadow-md"
+            >
+               {/* Priority indicator */}
+               <div
+                  className={cn(
+                     "flex h-10 w-1 rounded-full self-stretch",
+                     task.priority === "high" && "bg-red-500",
+                     task.priority === "medium" && "bg-yellow-500",
+                     task.priority === "low" && "bg-blue-500"
+                  )}
+               />
+
+               {/* Task info */}
+               <div className="flex-1 min-w-0">
+                  <h3 className="font-medium truncate cursor-pointer hover:text-primary" onClick={() => onEdit(task)}>
+                     {task.title}
+                  </h3>
+                  {task.description && <p className="text-sm text-muted-foreground truncate">{task.description}</p>}
+               </div>
+
+               {/* Meta info */}
+               <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground">
+                  {task.due_date && (
+                     <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>{formatDate(task.due_date)}</span>
+                     </div>
+                  )}
+                  <div className={cn("px-2 py-0.5 rounded-full text-xs font-medium", priorityColors[task.priority])}>
+                     {task.priority}
+                  </div>
+               </div>
+
+               {/* Status & actions */}
+               <div className="flex items-center gap-2">
+                  <Select value={task.status} onValueChange={(value: Task["status"]) => updateTask(task.id, { status: value })}>
+                     <SelectTrigger className="w-32 h-8 text-xs">
+                        <SelectValue />
+                     </SelectTrigger>
+                     <SelectContent>
+                        <SelectItem value="todo">{statusLabels.todo}</SelectItem>
+                        <SelectItem value="in_progress">{statusLabels.in_progress}</SelectItem>
+                        <SelectItem value="done">{statusLabels.done}</SelectItem>
+                     </SelectContent>
+                  </Select>
+
+                  <DropdownMenu>
+                     <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100">
+                           <MoreVertical className="h-4 w-4" />
+                        </Button>
+                     </DropdownMenuTrigger>
+                     <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onEdit(task)}>Edit</DropdownMenuItem>
+                        <DropdownMenuItem
+                           onClick={() => useTaskStore.getState().deleteTask(task.id)}
+                           className="text-destructive"
+                        >
+                           Delete
+                        </DropdownMenuItem>
+                     </DropdownMenuContent>
+                  </DropdownMenu>
+               </div>
+            </div>
          ))}
       </div>
    );

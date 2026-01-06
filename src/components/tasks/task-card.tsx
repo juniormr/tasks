@@ -1,8 +1,7 @@
 "use client";
 
 import { useTaskStore, Task } from "@/store/use-task-store";
-import { cn } from "@/lib/utils";
-import { formatRelativeTime, formatDate } from "@/lib/utils";
+import { cn, formatRelativeTime } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -33,14 +32,11 @@ function formatDueDate(dateStr: string | null): string {
 
    const date = new Date(dateStr);
    const now = new Date();
-   const diffInMs = date.getTime() - now.getTime();
-   const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+   const diffInDays = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
    if (diffInDays < -30) {
-      // Past due by more than 30 days - show actual date
-      return formatDate(date);
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
    } else if (diffInDays < -1) {
-      // Past due
       return `${Math.abs(diffInDays)}d ago`;
    } else if (diffInDays === -1) {
       return "Yesterday";
@@ -51,7 +47,7 @@ function formatDueDate(dateStr: string | null): string {
    } else if (diffInDays < 14) {
       return `in ${diffInDays}d`;
    } else {
-      return formatDate(date);
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
    }
 }
 
@@ -131,7 +127,15 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
                                  <span>{formatDueDate(task.due_date)}</span>
                               </div>
                            </TooltipTrigger>
-                           <TooltipContent>Due: {formatDate(task.due_date)}</TooltipContent>
+                           <TooltipContent>
+                              Due:{" "}
+                              {new Date(task.due_date).toLocaleDateString("en-US", {
+                                 weekday: "short",
+                                 month: "short",
+                                 day: "numeric",
+                                 year: "numeric",
+                              })}
+                           </TooltipContent>
                         </Tooltip>
                      )}
 
@@ -139,7 +143,15 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
                         <TooltipTrigger asChild>
                            <div className="text-xs text-muted-foreground ml-auto">{formatRelativeTime(task.created_at)}</div>
                         </TooltipTrigger>
-                        <TooltipContent>Created: {formatDate(task.created_at)}</TooltipContent>
+                        <TooltipContent>
+                           Created:{" "}
+                           {new Date(task.created_at).toLocaleDateString("en-US", {
+                              weekday: "short",
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                           })}
+                        </TooltipContent>
                      </Tooltip>
                   </TooltipProvider>
                </div>
