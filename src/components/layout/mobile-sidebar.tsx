@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ListTodo, Calendar, Settings, X } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { LayoutDashboard, ListTodo, Calendar, Settings } from "lucide-react";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 const navigation = [
@@ -21,18 +21,14 @@ export function MobileSidebar() {
       <Sheet>
          <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="md:hidden">
-               <LayoutDashboard className="h-5 w-5" />
+               <LayoutDashboard className="size-5 text-primary" />
             </Button>
          </SheetTrigger>
-         <SheetContent side="left" className="w-64 p-0">
+         <SheetContent side="left" className="w-64 p-0 text-primary">
             <div className="flex h-full flex-col">
+               <SheetTitle />
                <div className="flex h-14 items-center justify-between border-b px-4">
-                  <h1 className="text-xl font-bold">Taskjr</h1>
-                  <SheetTrigger asChild>
-                     <Button variant="ghost" size="icon">
-                        <X className="h-5 w-5" />
-                     </Button>
-                  </SheetTrigger>
+                  <h1 className="text-xl font-bold text-primary">Taskjr</h1>
                </div>
 
                <nav className="flex-1 space-y-1 p-4">

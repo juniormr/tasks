@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { User } from "@supabase/supabase-js";
 
 export default function SettingsPage() {
-   const [user, setUser] = useState<any>(null);
+   const [user, setUser] = useState<User | null>(null);
    const supabase = createClient();
 
    useEffect(() => {
@@ -28,7 +29,7 @@ export default function SettingsPage() {
       <div className="max-w-2xl space-y-6">
          <div>
             <h2 className="text-2xl font-bold">Settings</h2>
-            <p className="text-muted-foreground">Manage your account and preferences</p>
+            <p className="text-black/90">Manage your account and preferences</p>
          </div>
 
          <Card>
@@ -40,7 +41,7 @@ export default function SettingsPage() {
                <div className="flex items-center justify-between">
                   <div>
                      <p className="font-medium">Email</p>
-                     <p className="text-sm text-muted-foreground">{user?.email || "Loading..."}</p>
+                     <p className="text-sm text-muted-foreground">{user?.email ?? "Loading..."}</p>
                   </div>
                </div>
 

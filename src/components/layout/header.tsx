@@ -29,7 +29,7 @@ export function Header() {
          </div>
 
          {/* Right side - Filter + Theme */}
-         <div className="flex items-center gap-2">
+         <div className="flex items-center gap-2 text-primary">
             <Select value={filter} onValueChange={(value: "all" | "todo" | "in_progress" | "done") => setFilter(value)}>
                <SelectTrigger className="w-32">
                   <SelectValue placeholder="Filter" />

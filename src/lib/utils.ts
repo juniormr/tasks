@@ -49,3 +49,27 @@ export function formatRelativeTime(date: string | Date): string {
 
    return formatDate(d);
 }
+
+export function formatDueDate(dateStr: string | null): string {
+   if (!dateStr) return "";
+
+   const date = new Date(dateStr);
+   const now = new Date();
+   const diffInDays = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+   if (diffInDays < -30) {
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+   } else if (diffInDays < -1) {
+      return `${Math.abs(diffInDays)}d ago`;
+   } else if (diffInDays === -1) {
+      return "Yesterday";
+   } else if (diffInDays === 0) {
+      return "Today";
+   } else if (diffInDays === 1) {
+      return "Tomorrow";
+   } else if (diffInDays < 14) {
+      return `in ${diffInDays}d`;
+   } else {
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+   }
+}

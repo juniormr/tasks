@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Task } from "@/store/use-task-store";
 import { TaskForm, KanbanBoard } from "@/components/tasks";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -8,9 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 export default function DashboardPage() {
    const [isFormOpen, setIsFormOpen] = useState(false);
-   const [editTask, setEditTask] = useState(null);
+   const [editTask, setEditTask] = useState<Task | null>(null);
 
-   const handleEdit = (task: any) => {
+   const handleEdit = (task: Task) => {
       setEditTask(task);
       setIsFormOpen(true);
    };
@@ -32,7 +33,7 @@ export default function DashboardPage() {
          <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
                <h2 className="text-xl sm:text-2xl font-bold">Board</h2>
-               <p className="text-xs sm:text-sm text-muted-foreground">Drag and drop tasks between columns</p>
+               <p className="text-xs sm:text-sm text-black/90">Drag and drop tasks between columns</p>
             </div>
 
             <Button size="sm" onClick={handleCreate}>
@@ -46,7 +47,7 @@ export default function DashboardPage() {
          </div>
 
          <Dialog open={isFormOpen} onOpenChange={handleOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-106.25">
                <DialogHeader>
                   <DialogTitle>{editTask ? "Edit Task" : "Create New Task"}</DialogTitle>
                </DialogHeader>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTaskStore, Task } from "@/store/use-task-store";
-import { formatDate } from "@/lib/utils";
+import { formatDueDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ const priorityColors = {
    high: "border-l-red-500 bg-red-50 dark:bg-red-950",
 };
 
-const statusLabels = {
+const statusLabels: Record<Task["status"], string> = {
    todo: "To Do",
    in_progress: "In Progress",
    done: "Done",
@@ -38,15 +38,15 @@ function getDateLabel(dateStr: string | null): { label: string; date: Date | nul
    if (diffInDays === -1) return { label: "Yesterday", date: date };
    if (diffInDays === 0) return { label: "Today", date: date };
    if (diffInDays === 1) return { label: "Tomorrow", date: date };
-   if (diffInDays > 1 && diffInDays <= 7) return { label: `This Week`, date: date };
+   if (diffInDays > 1 && diffInDays <= 7) return { label: "This Week", date: date };
    if (diffInDays > 7 && diffInDays <= 14) return { label: "Next Week", date: date };
    if (diffInDays > 14 && diffInDays <= 30) return { label: "This Month", date: date };
 
-   return { label: formatDate(date), date: date };
+   return { label: formatDueDate(dateStr), date: date };
 }
 
 export function TimelineView({ onEdit }: TimelineViewProps) {
-   const { tasks, filter, searchQuery, updateTask } = useTaskStore();
+   const { tasks, filter, searchQuery, updateTask, deleteTask } = useTaskStore();
 
    const filteredTasks = tasks
       .filter((task) => {
@@ -73,7 +73,6 @@ export function TimelineView({ onEdit }: TimelineViewProps) {
       );
    }
 
-   // Group tasks by date
    const groupedTasks = filteredTasks.reduce((groups, task) => {
       const { label } = getDateLabel(task.due_date);
       if (!groups[label]) {
@@ -83,7 +82,6 @@ export function TimelineView({ onEdit }: TimelineViewProps) {
       return groups;
    }, {} as Record<string, Task[]>);
 
-   // Sort groups by date
    const sortedGroups = Object.entries(groupedTasks).sort((a, b) => {
       const dateA = a[1][0].due_date ? new Date(a[1][0].due_date).getTime() : Infinity;
       const dateB = b[1][0].due_date ? new Date(b[1][0].due_date).getTime() : Infinity;
@@ -94,19 +92,17 @@ export function TimelineView({ onEdit }: TimelineViewProps) {
       <div className="space-y-6">
          {sortedGroups.map(([dateLabel, dateTasks]) => (
             <div key={dateLabel}>
-               {/* Date separator */}
                <div className="flex items-center gap-4 mb-3">
-                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <div className="flex items-center gap-2 text-sm font-medium text-black/90">
                      <Calendar className="h-4 w-4" />
                      {dateLabel}
                   </div>
                   <div className="flex-1 h-px bg-border" />
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-black/70">
                      {dateTasks.length} {dateTasks.length === 1 ? "task" : "tasks"}
                   </span>
                </div>
 
-               {/* Tasks for this date */}
                <div className="space-y-3">
                   {dateTasks.map((task) => (
                      <Card
@@ -118,7 +114,7 @@ export function TimelineView({ onEdit }: TimelineViewProps) {
                            <div className="flex items-start justify-between">
                               <CardTitle className="text-base">{task.title}</CardTitle>
                               <DropdownMenu>
-                                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                 <DropdownMenuTrigger asChild>
                                     <Button
                                        variant="ghost"
                                        size="icon"
@@ -130,10 +126,7 @@ export function TimelineView({ onEdit }: TimelineViewProps) {
                                  </DropdownMenuTrigger>
                                  <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => onEdit(task)}>Edit</DropdownMenuItem>
-                                    <DropdownMenuItem
-                                       onClick={() => useTaskStore.getState().deleteTask(task.id)}
-                                       className="text-destructive"
-                                    >
+                                    <DropdownMenuItem onClick={() => deleteTask(task.id)} className="text-destructive">
                                        Delete
                                     </DropdownMenuItem>
                                  </DropdownMenuContent>
@@ -164,7 +157,6 @@ export function TimelineView({ onEdit }: TimelineViewProps) {
                                     onValueChange={(value: Task["status"]) => {
                                        updateTask(task.id, { status: value });
                                     }}
-                                    onClick={(e) => e.stopPropagation()}
                                  >
                                     <SelectTrigger className="w-28 h-7 text-xs" onClick={(e) => e.stopPropagation()}>
                                        <SelectValue />

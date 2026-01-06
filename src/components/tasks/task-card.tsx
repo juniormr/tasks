@@ -1,7 +1,7 @@
 "use client";
 
 import { useTaskStore, Task } from "@/store/use-task-store";
-import { cn, formatRelativeTime } from "@/lib/utils";
+import { cn, formatDueDate, formatRelativeTime } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,38 +21,14 @@ const priorityColors = {
    high: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950",
 };
 
-const statusLabels = {
+const statusLabels: Record<Task["status"], string> = {
    todo: "To Do",
    in_progress: "In Progress",
    done: "Done",
 };
 
-function formatDueDate(dateStr: string | null): string {
-   if (!dateStr) return "";
-
-   const date = new Date(dateStr);
-   const now = new Date();
-   const diffInDays = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-   if (diffInDays < -30) {
-      return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-   } else if (diffInDays < -1) {
-      return `${Math.abs(diffInDays)}d ago`;
-   } else if (diffInDays === -1) {
-      return "Yesterday";
-   } else if (diffInDays === 0) {
-      return "Today";
-   } else if (diffInDays === 1) {
-      return "Tomorrow";
-   } else if (diffInDays < 14) {
-      return `in ${diffInDays}d`;
-   } else {
-      return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-   }
-}
-
 export function TaskCard({ task, onEdit }: TaskCardProps) {
-   const { updateTask } = useTaskStore();
+   const { updateTask, deleteTask } = useTaskStore();
 
    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
       id: task.id,
@@ -89,10 +65,7 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
                      </DropdownMenuTrigger>
                      <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => onEdit(task)}>Edit</DropdownMenuItem>
-                        <DropdownMenuItem
-                           onClick={() => useTaskStore.getState().deleteTask(task.id)}
-                           className="text-destructive"
-                        >
+                        <DropdownMenuItem onClick={() => deleteTask(task.id)} className="text-destructive">
                            Delete
                         </DropdownMenuItem>
                      </DropdownMenuContent>

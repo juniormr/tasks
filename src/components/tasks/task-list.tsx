@@ -1,8 +1,7 @@
 "use client";
 
-import { useTaskStore } from "@/store/use-task-store";
-import { Task } from "@/store/use-task-store";
-import { cn, formatDate } from "@/lib/utils";
+import { useTaskStore, Task } from "@/store/use-task-store";
+import { cn, formatDueDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, MoreVertical } from "lucide-react";
@@ -13,19 +12,19 @@ interface TaskListProps {
 }
 
 const priorityColors = {
-   low: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950",
-   medium: "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950",
-   high: "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950",
+   low: "bg-blue-500",
+   medium: "bg-yellow-500",
+   high: "bg-red-500",
 };
 
-const statusLabels = {
+const statusLabels: Record<Task["status"], string> = {
    todo: "To Do",
    in_progress: "In Progress",
    done: "Done",
 };
 
 export function TaskList({ onEdit }: TaskListProps) {
-   const { tasks, filter, searchQuery, isLoading, updateTask } = useTaskStore();
+   const { tasks, filter, searchQuery, isLoading, updateTask, deleteTask } = useTaskStore();
 
    const filteredTasks = tasks.filter((task) => {
       const matchesFilter = filter === "all" || task.status === filter;
@@ -59,41 +58,40 @@ export function TaskList({ onEdit }: TaskListProps) {
                key={task.id}
                className="group flex items-center gap-4 rounded-lg border bg-card p-3 transition-all hover:shadow-md"
             >
-               {/* Priority indicator */}
-               <div
-                  className={cn(
-                     "flex h-10 w-1 rounded-full self-stretch",
-                     task.priority === "high" && "bg-red-500",
-                     task.priority === "medium" && "bg-yellow-500",
-                     task.priority === "low" && "bg-blue-500"
-                  )}
-               />
+               <div className={cn("flex h-10 w-1 rounded-full self-stretch", priorityColors[task.priority])} />
 
-               {/* Task info */}
                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium truncate cursor-pointer hover:text-primary" onClick={() => onEdit(task)}>
+                  <h3
+                     className="text-primary font-medium truncate cursor-pointer hover:text-primary/90"
+                     onClick={() => onEdit(task)}
+                  >
                      {task.title}
                   </h3>
                   {task.description && <p className="text-sm text-muted-foreground truncate">{task.description}</p>}
                </div>
 
-               {/* Meta info */}
                <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground">
                   {task.due_date && (
                      <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        <span>{formatDate(task.due_date)}</span>
+                        <span>{formatDueDate(task.due_date)}</span>
                      </div>
                   )}
-                  <div className={cn("px-2 py-0.5 rounded-full text-xs font-medium", priorityColors[task.priority])}>
+                  <div
+                     className={cn(
+                        "px-2 py-0.5 rounded-full text-xs font-medium capitalize",
+                        task.priority === "high" && "text-red-600 dark:text-red-400",
+                        task.priority === "medium" && "text-yellow-600 dark:text-yellow-400",
+                        task.priority === "low" && "text-blue-600 dark:text-blue-400"
+                     )}
+                  >
                      {task.priority}
                   </div>
                </div>
 
-               {/* Status & actions */}
                <div className="flex items-center gap-2">
                   <Select value={task.status} onValueChange={(value: Task["status"]) => updateTask(task.id, { status: value })}>
-                     <SelectTrigger className="w-32 h-8 text-xs">
+                     <SelectTrigger className="w-32 h-8 text-xs text-primary">
                         <SelectValue />
                      </SelectTrigger>
                      <SelectContent>
@@ -111,10 +109,7 @@ export function TaskList({ onEdit }: TaskListProps) {
                      </DropdownMenuTrigger>
                      <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => onEdit(task)}>Edit</DropdownMenuItem>
-                        <DropdownMenuItem
-                           onClick={() => useTaskStore.getState().deleteTask(task.id)}
-                           className="text-destructive"
-                        >
+                        <DropdownMenuItem onClick={() => deleteTask(task.id)} className="text-destructive">
                            Delete
                         </DropdownMenuItem>
                      </DropdownMenuContent>
