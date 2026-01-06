@@ -2,7 +2,7 @@
 
 import { useTaskStore, Task } from "@/store/use-task-store";
 import { cn } from "@/lib/utils";
-import { formatRelativeTime } from "@/lib/utils";
+import { formatRelativeTime, formatDate } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,6 +27,33 @@ const statusLabels = {
    in_progress: "In Progress",
    done: "Done",
 };
+
+function formatDueDate(dateStr: string | null): string {
+   if (!dateStr) return "";
+
+   const date = new Date(dateStr);
+   const now = new Date();
+   const diffInMs = date.getTime() - now.getTime();
+   const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+   if (diffInDays < -30) {
+      // Past due by more than 30 days - show actual date
+      return formatDate(date);
+   } else if (diffInDays < -1) {
+      // Past due
+      return `${Math.abs(diffInDays)}d ago`;
+   } else if (diffInDays === -1) {
+      return "Yesterday";
+   } else if (diffInDays === 0) {
+      return "Today";
+   } else if (diffInDays === 1) {
+      return "Tomorrow";
+   } else if (diffInDays < 14) {
+      return `in ${diffInDays}d`;
+   } else {
+      return formatDate(date);
+   }
+}
 
 export function TaskCard({ task, onEdit }: TaskCardProps) {
    const { updateTask } = useTaskStore();
@@ -101,18 +128,18 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
                            <TooltipTrigger asChild>
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                  <Calendar className="h-3 w-3" />
-                                 <span>{formatRelativeTime(task.due_date)}</span>
+                                 <span>{formatDueDate(task.due_date)}</span>
                               </div>
                            </TooltipTrigger>
-                           <TooltipContent>Due Date</TooltipContent>
+                           <TooltipContent>Due: {formatDate(task.due_date)}</TooltipContent>
                         </Tooltip>
                      )}
 
                      <Tooltip>
                         <TooltipTrigger asChild>
-                           <div className="text-xs text-muted-foreground">{formatRelativeTime(task.created_at)}</div>
+                           <div className="text-xs text-muted-foreground ml-auto">{formatRelativeTime(task.created_at)}</div>
                         </TooltipTrigger>
-                        <TooltipContent>Created</TooltipContent>
+                        <TooltipContent>Created: {formatDate(task.created_at)}</TooltipContent>
                      </Tooltip>
                   </TooltipProvider>
                </div>
