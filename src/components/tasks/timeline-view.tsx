@@ -14,9 +14,9 @@ interface TimelineViewProps {
 }
 
 const priorityColors = {
-   low: "border-l-blue-500 bg-blue-50 dark:bg-blue-950",
-   medium: "border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950",
-   high: "border-l-red-500 bg-red-50 dark:bg-red-950",
+   low: "border-l-blue-500 bg-blue-50 dark:bg-black/50",
+   medium: "border-l-yellow-500 bg-yellow-50 dark:bg-black/70",
+   high: "border-l-red-500 bg-red-50 dark:bg-black",
 };
 
 const statusLabels: Record<Task["status"], string> = {
