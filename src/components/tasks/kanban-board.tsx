@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useTaskStore, Task } from "@/store/use-task-store";
 import { KanbanColumn } from "./kanban-column";
 import { TaskCard } from "./task-card";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { cn } from "@/lib/utils";
 
 interface KanbanBoardProps {
    onEdit: (task: Task) => void;
@@ -14,6 +16,7 @@ interface KanbanBoardProps {
 export function KanbanBoard({ onEdit }: KanbanBoardProps) {
    const { tasks, updateTask, filter, searchQuery } = useTaskStore();
    const [activeTask, setActiveTask] = useState<Task | null>(null);
+   const isMobile = useMediaQuery("(max-width: 768px)");
 
    const sensors = useSensors(
       useSensor(PointerSensor, {
@@ -59,7 +62,7 @@ export function KanbanBoard({ onEdit }: KanbanBoardProps) {
 
    return (
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-         <div className="grid h-full gap-4 md:grid-cols-3">
+         <div className={cn("grid gap-4 h-full", isMobile ? "grid-cols-1" : "md:grid-cols-3")}>
             <KanbanColumn id="todo" title="To Do" tasks={todoTasks} onEdit={onEdit} />
             <KanbanColumn id="in_progress" title="In Progress" tasks={inProgressTasks} onEdit={onEdit} />
             <KanbanColumn id="done" title="Done" tasks={doneTasks} onEdit={onEdit} />
@@ -67,7 +70,7 @@ export function KanbanBoard({ onEdit }: KanbanBoardProps) {
 
          <DragOverlay>
             {activeTask && (
-               <div className="rotate-3 cursor-grabbing">
+               <div className={cn("rotate-2 cursor-grabbing opacity-80", isMobile && "scale-105")}>
                   <TaskCard task={activeTask} onEdit={() => {}} />
                </div>
             )}
