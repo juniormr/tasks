@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ListTodo, Calendar, Settings } from "lucide-react";
+import { LayoutDashboard, ListTodo, Calendar, Settings, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
@@ -16,6 +18,13 @@ const navigation = [
 
 export function MobileSidebar() {
    const pathname = usePathname();
+   const router = useRouter();
+   const supabase = createClient();
+
+   const handleSignOut = async () => {
+      await supabase.auth.signOut();
+      router.push("/login");
+   };
 
    return (
       <Sheet>
@@ -53,6 +62,16 @@ export function MobileSidebar() {
                      );
                   })}
                </nav>
+
+               <div className="border-t p-4">
+                  <button
+                     onClick={handleSignOut}
+                     className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  >
+                     <LogOut className="h-5 w-5" />
+                     Sign Out
+                  </button>
+               </div>
             </div>
          </SheetContent>
       </Sheet>
